@@ -1,0 +1,71 @@
+package "Asterless/MoonQOI/lib"
+
+// Values
+fn bytes_eq(Bytes, Int, Bytes, Int, Int) -> Bool
+
+fn decode(Bytes) -> Image
+
+fn encode(Image) -> Bytes
+
+fn qoi_color_hash(Pixel) -> Int
+
+let qoi_magic : Bytes
+
+let qoi_padding : Bytes
+
+fn read_be32(Bytes, Int) -> Int
+
+fn write_be32(FixedArray[Byte], Int, Int) -> Unit
+
+// Types and methods
+pub enum Channels {
+  RGB
+  RGBA
+}
+impl Eq for Channels
+impl Show for Channels
+
+pub enum Colorspace {
+  SRGBLinearAlpha
+  AllLinear
+}
+impl Eq for Colorspace
+impl Show for Colorspace
+
+pub struct Image {
+  width : Int
+  height : Int
+  channels : Channels
+  colorspace : Colorspace
+  pixels : Array[Pixel]
+}
+fn Image::new(Int, Int, Channels, Colorspace, Array[Pixel]) -> Self
+impl Show for Image
+
+pub struct Pixel {
+  r : Byte
+  g : Byte
+  b : Byte
+  a : Byte
+}
+fn Pixel::new(Byte, Byte, Byte, Byte) -> Self
+impl Default for Pixel
+impl Eq for Pixel
+impl Show for Pixel
+
+pub enum QOIError {
+  InvalidMagic
+  InvalidHeader
+  InvalidData(String)
+  UnexpectedEOF
+  TooManyPixels
+  InsufficientPixels
+  InvalidChannel
+  InvalidColorspace
+}
+impl Show for QOIError
+
+// Type aliases
+
+// Traits
+
