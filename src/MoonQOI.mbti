@@ -9,10 +9,6 @@ fn decode(Bytes) -> @lib.Image
 
 fn encode(@lib.Image) -> Bytes
 
-fn example_gradient() -> Unit
-
-fn example_red_square() -> Unit
-
 fn new_image(Int, Int, @lib.Channels, @lib.Colorspace, Array[@lib.Pixel]) -> @lib.Image
 
 fn new_pixel(Byte, Byte, Byte, Byte) -> @lib.Pixel

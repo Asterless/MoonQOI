@@ -3,33 +3,33 @@
 // QOI format constants
 
 ///|
-pub let qoi_magic : Bytes = b"qoif"
+pub const QOI_MAGIC : Bytes = b"qoif"
 
 ///|
-pub let qoi_padding : Bytes = b"\x00\x00\x00\x00\x00\x00\x00\x01"
+pub const QOI_PADDING : Bytes = b"\x00\x00\x00\x00\x00\x00\x00\x01"
 
 // QOI opcodes
 
 ///|
-let qoi_op_index = 0b00000000 // 0x00 - 0x3f
+const QOI_OP_INDEX = 0b00000000 // 0x00 - 0x3f
 
 ///|
-let qoi_op_diff = 0b01000000 // 0x40 - 0x7f
+const QOI_OP_DIFF = 0b01000000 // 0x40 - 0x7f
 
 ///|
-let qoi_op_luma = 0b10000000 // 0x80 - 0xbf
+const QOI_OP_LUMA = 0b10000000 // 0x80 - 0xbf
 
 ///|
-let qoi_op_run = 0b11000000 // 0xc0 - 0xfd
+const QOI_OP_RUN = 0b11000000 // 0xc0 - 0xfd
 
 ///|
-let qoi_op_rgb = 0xfe // 0xfe
+const QOI_OP_RGB = 0xfe // 0xfe
 
 ///|
-let qoi_op_rgba = 0xff // 0xff
+const QOI_OP_RGBA = 0xff // 0xff
 
 ///|
-let qoi_mask_2 = 0b11000000 // 0xc0
+const QOI_MASK_2 = 0b11000000 // 0xc0
 
 ///| Hash function for pixel indexing
 pub fn qoi_color_hash(pixel : Pixel) -> Int {
@@ -65,12 +65,13 @@ pub fn bytes_eq(
   b_start : Int,
   len : Int
 ) -> Bool {
-  for i = 0; i < len; i = i + 1 {
+  for i in 0..<len {
     if a[a_start + i] != b[b_start + i] {
-      return false
+      break false
     }
+  } else {
+    true
   }
-  true
 }
 
 ///| QOI decoder
@@ -80,7 +81,7 @@ pub fn decode(data : Bytes) -> Image {
   }
 
   // Check magic
-  if not(bytes_eq(data, 0, qoi_magic, 0, 4)) {
+  if not(bytes_eq(data, 0, QOI_MAGIC, 0, 4)) {
     abort("Invalid magic bytes")
   }
 
@@ -118,14 +119,14 @@ pub fn decode(data : Bytes) -> Image {
     } else {
       let b1 = data[pos].to_int()
       pos = pos + 1
-      if b1 == qoi_op_rgb {
+      if b1 == QOI_OP_RGB {
         // RGB
         if pos + 2 >= data.length() {
           abort("Unexpected end of file in RGB")
         }
         pixel = Pixel::new(data[pos], data[pos + 1], data[pos + 2], pixel.a)
         pos = pos + 3
-      } else if b1 == qoi_op_rgba {
+      } else if b1 == QOI_OP_RGBA {
         // RGBA
         if pos + 3 >= data.length() {
           abort("Unexpected end of file in RGBA")
@@ -137,11 +138,11 @@ pub fn decode(data : Bytes) -> Image {
           data[pos + 3],
         )
         pos = pos + 4
-      } else if (b1 & qoi_mask_2) == qoi_op_index {
+      } else if (b1 & QOI_MASK_2) == QOI_OP_INDEX {
         // INDEX
         let idx = b1
         pixel = index[idx]
-      } else if (b1 & qoi_mask_2) == qoi_op_diff {
+      } else if (b1 & QOI_MASK_2) == QOI_OP_DIFF {
         // DIFF
         let dr = ((b1 >> 4) & 0x03) - 2
         let dg = ((b1 >> 2) & 0x03) - 2
@@ -150,7 +151,7 @@ pub fn decode(data : Bytes) -> Image {
         let new_g = (pixel.g.to_int() + dg).land(0xFF).to_byte()
         let new_b = (pixel.b.to_int() + db).land(0xFF).to_byte()
         pixel = Pixel::new(new_r, new_g, new_b, pixel.a)
-      } else if (b1 & qoi_mask_2) == qoi_op_luma {
+      } else if (b1 & QOI_MASK_2) == QOI_OP_LUMA {
         // LUMA
         if pos >= data.length() {
           abort("Unexpected end of file in LUMA")
@@ -164,7 +165,7 @@ pub fn decode(data : Bytes) -> Image {
         let new_g = (pixel.g.to_int() + dg).land(0xFF).to_byte()
         let new_b = (pixel.b.to_int() + db).land(0xFF).to_byte()
         pixel = Pixel::new(new_r, new_g, new_b, pixel.a)
-      } else if (b1 & qoi_mask_2) == qoi_op_run {
+      } else if (b1 & QOI_MASK_2) == QOI_OP_RUN {
         // RUN
         run = b1 & 0x3f
       } else {
@@ -185,8 +186,8 @@ pub fn encode(image : Image) -> Bytes {
   let buffer : Array[Byte] = []
 
   // Write header
-  for i = 0; i < qoi_magic.length(); i = i + 1 {
-    buffer.push(qoi_magic[i])
+  for i = 0; i < QOI_MAGIC.length(); i = i + 1 {
+    buffer.push(QOI_MAGIC[i])
   }
 
   // Write dimensions and format info
@@ -228,12 +229,12 @@ pub fn encode(image : Image) -> Bytes {
     if pixel == prev_pixel {
       run = run + 1
       if run == 62 || i == image.pixels.length() - 1 {
-        buffer.push((qoi_op_run | run).to_byte())
+        buffer.push((QOI_OP_RUN | run).to_byte())
         run = 0
       }
     } else {
       if run > 0 {
-        buffer.push((qoi_op_run | run).to_byte())
+        buffer.push((QOI_OP_RUN | run).to_byte())
         run = 0
       }
       let index_pos = qoi_color_hash(pixel)
@@ -249,7 +250,7 @@ pub fn encode(image : Image) -> Bytes {
           if dr >= -2 && dr <= 1 && dg >= -2 && dg <= 1 && db >= -2 && db <= 1 {
             // DIFF
             buffer.push(
-              (qoi_op_diff | ((dr + 2) << 4) | ((dg + 2) << 2) | (db + 2)).to_byte(),
+              (QOI_OP_DIFF | ((dr + 2) << 4) | ((dg + 2) << 2) | (db + 2)).to_byte(),
             )
           } else {
             let dr_dg = dr - dg
@@ -261,11 +262,11 @@ pub fn encode(image : Image) -> Bytes {
               db_dg >= -8 &&
               db_dg <= 7 {
               // LUMA
-              buffer.push((qoi_op_luma | (dg + 32)).to_byte())
+              buffer.push((QOI_OP_LUMA | (dg + 32)).to_byte())
               buffer.push((((dr_dg + 8) << 4) | (db_dg + 8)).to_byte())
             } else {
               // RGB
-              buffer.push(qoi_op_rgb.to_byte())
+              buffer.push(QOI_OP_RGB.to_byte())
               buffer.push(pixel.r)
               buffer.push(pixel.g)
               buffer.push(pixel.b)
@@ -273,7 +274,7 @@ pub fn encode(image : Image) -> Bytes {
           }
         } else {
           // RGBA
-          buffer.push(qoi_op_rgba.to_byte())
+          buffer.push(QOI_OP_RGBA.to_byte())
           buffer.push(pixel.r)
           buffer.push(pixel.g)
           buffer.push(pixel.b)
@@ -285,8 +286,8 @@ pub fn encode(image : Image) -> Bytes {
   }
 
   // Write padding
-  for i = 0; i < qoi_padding.length(); i = i + 1 {
-    buffer.push(qoi_padding[i])
+  for i in 0..<QOI_PADDING.length() {
+    buffer.push(QOI_PADDING[i])
   }
 
   // Convert to bytes

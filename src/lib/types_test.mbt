@@ -99,20 +99,20 @@ test "bytes equality check" {
 
 ///|
 test "qoi magic and padding constants" {
-  assert_eq(qoi_magic.length(), 4)
-  assert_eq(qoi_padding.length(), 8)
+  assert_eq(QOI_MAGIC.length(), 4)
+  assert_eq(QOI_PADDING.length(), 8)
 
   // Verify magic bytes spell "qoif"
-  assert_eq(qoi_magic[0], b'q')
-  assert_eq(qoi_magic[1], b'o')
-  assert_eq(qoi_magic[2], b'i')
-  assert_eq(qoi_magic[3], b'f')
+  assert_eq(QOI_MAGIC[0], b'q')
+  assert_eq(QOI_MAGIC[1], b'o')
+  assert_eq(QOI_MAGIC[2], b'i')
+  assert_eq(QOI_MAGIC[3], b'f')
 
   // Verify padding is 7 zeros + 1
   for i = 0; i < 7; i = i + 1 {
-    assert_eq(qoi_padding[i], b'\x00')
+    assert_eq(QOI_PADDING[i], b'\x00')
   }
-  assert_eq(qoi_padding[7], b'\x01')
+  assert_eq(QOI_PADDING[7], b'\x01')
 }
 
 ///|

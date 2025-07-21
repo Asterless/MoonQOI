@@ -1,6 +1,10 @@
 package "Asterless/MoonQOI/lib"
 
 // Values
+const QOI_MAGIC : Bytes = qoif
+
+const QOI_PADDING : Bytes = \x00\x00\x00\x00\x00\x00\x00\x01
+
 fn bytes_eq(Bytes, Int, Bytes, Int, Int) -> Bool
 
 fn decode(Bytes) -> Image
@@ -8,10 +12,6 @@ fn decode(Bytes) -> Image
 fn encode(Image) -> Bytes
 
 fn qoi_color_hash(Pixel) -> Int
-
-let qoi_magic : Bytes
-
-let qoi_padding : Bytes
 
 fn read_be32(Bytes, Int) -> Int
 
