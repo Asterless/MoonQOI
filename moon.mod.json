@@ -2,9 +2,16 @@
   "name": "Asterless/MoonQOI",
   "version": "0.1.0",
   "readme": "README.md",
-  "repository": "",
+  "repository": "https://github.com/Asterless/MoonQOI",
   "license": "Apache-2.0",
-  "keywords": [],
-  "description": "",
+  "keywords": [
+    "image",
+    "format",
+    "qoi",
+    "encoder",
+    "decoder",
+    "compression"
+  ],
+  "description": "QOI (Quite OK Image Format) encoder/decoder library for MoonBit",
   "source": "src"
 }
