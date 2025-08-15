@@ -1,3 +1,4 @@
+// Generated using `moon info`, DON'T EDIT IT
 package "Asterless/MoonQOI/lib"
 
 // Values
@@ -16,6 +17,8 @@ fn qoi_color_hash(Pixel) -> Int
 fn read_be32(Bytes, Int) -> Int
 
 fn write_be32(FixedArray[Byte], Int, Int) -> Unit
+
+// Errors
 
 // Types and methods
 pub enum Channels {
