@@ -63,7 +63,7 @@ pub fn bytes_eq(
   a_start : Int,
   b : Bytes,
   b_start : Int,
-  len : Int
+  len : Int,
 ) -> Bool {
   for i in 0..<len {
     if a[a_start + i] != b[b_start + i] {

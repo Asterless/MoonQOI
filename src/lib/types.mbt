@@ -41,7 +41,7 @@ pub fn Image::new(
   height : Int,
   channels : Channels,
   colorspace : Colorspace,
-  pixels : Array[Pixel]
+  pixels : Array[Pixel],
 ) -> Image {
   { width, height, channels, colorspace, pixels }
 }

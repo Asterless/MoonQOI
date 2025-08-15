@@ -16,7 +16,7 @@ pub fn new_image(
   height : Int,
   channels : @lib.Channels,
   colorspace : @lib.Colorspace,
-  pixels : Array[@lib.Pixel]
+  pixels : Array[@lib.Pixel],
 ) -> @lib.Image {
   @lib.Image::new(width, height, channels, colorspace, pixels)
 }
