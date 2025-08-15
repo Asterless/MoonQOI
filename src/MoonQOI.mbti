@@ -6,9 +6,9 @@ import(
 )
 
 // Values
-fn decode(Bytes) -> @lib.Image
+fn decode(Bytes) -> Result[@lib.Image, @lib.QOIError]
 
-fn encode(@lib.Image) -> Bytes
+fn encode(@lib.Image) -> Result[Bytes, @lib.QOIError]
 
 fn new_image(Int, Int, @lib.Channels, @lib.Colorspace, Array[@lib.Pixel]) -> @lib.Image
 

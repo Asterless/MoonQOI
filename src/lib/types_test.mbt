@@ -198,3 +198,25 @@ test "bitwise operations for QOI opcodes" {
   assert_eq(value << 4, 0x120)
   assert_eq(value >> 2, 0x04)
 }
+
+///| Test that QOI decoder properly handles invalid magic bytes
+test "decode invalid magic returns InvalidMagic error" {
+  let padded_data = b"test\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  let result = decode(padded_data)
+  match result {
+    Ok(_) => fail("Expected error for invalid magic")
+    Err(InvalidMagic) => () // This is expected
+    Err(e) => fail("Expected InvalidMagic error, got: " + e.to_string())
+  }
+}
+
+///| Test that QOI decoder properly handles insufficient data
+test "decode insufficient data returns InvalidHeader error" {
+  let short_data = b"qoi" // Too short to be valid
+  let result = decode(short_data)
+  match result {
+    Ok(_) => fail("Expected error for insufficient data")
+    Err(InvalidHeader) => () // This is expected
+    Err(e) => fail("Expected InvalidHeader error, got: " + e.to_string())
+  }
+}

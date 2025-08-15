@@ -1,12 +1,16 @@
 // QOI (Quite OK Image Format) Library Entry Point
 
 ///| Decode QOI format bytes into an Image
-pub fn decode(data : Bytes) -> @lib.Image {
+
+///| Returns Result containing Image on success or QOIError on failure
+pub fn decode(data : Bytes) -> Result[@lib.Image, @lib.QOIError] {
   @lib.decode(data)
 }
 
 ///| Encode an Image into QOI format bytes
-pub fn encode(image : @lib.Image) -> Bytes {
+
+///| Returns Result containing Bytes on success or QOIError on failure
+pub fn encode(image : @lib.Image) -> Result[Bytes, @lib.QOIError] {
   @lib.encode(image)
 }
 

@@ -8,9 +8,9 @@ const QOI_PADDING : Bytes = \x00\x00\x00\x00\x00\x00\x00\x01
 
 fn bytes_eq(Bytes, Int, Bytes, Int, Int) -> Bool
 
-fn decode(Bytes) -> Image
+fn decode(Bytes) -> Result[Image, QOIError]
 
-fn encode(Image) -> Bytes
+fn encode(Image) -> Result[Bytes, QOIError]
 
 fn qoi_color_hash(Pixel) -> Int
 

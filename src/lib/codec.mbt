@@ -75,14 +75,14 @@ pub fn bytes_eq(
 }
 
 ///| QOI decoder
-pub fn decode(data : Bytes) -> Image {
+pub fn decode(data : Bytes) -> Result[Image, QOIError] {
   if data.length() < 14 {
-    abort("Invalid header: file too short")
+    return Err(InvalidHeader)
   }
 
   // Check magic
   if not(bytes_eq(data, 0, QOI_MAGIC, 0, 4)) {
-    abort("Invalid magic bytes")
+    return Err(InvalidMagic)
   }
 
   // Read header
@@ -91,19 +91,22 @@ pub fn decode(data : Bytes) -> Image {
   let channels_byte = data[12].to_int()
   let colorspace_byte = data[13].to_int()
   if width == 0 || height == 0 {
-    abort("Invalid header: zero dimensions")
+    return Err(InvalidHeader)
   }
   let channels = match channels_byte {
     3 => RGB
     4 => RGBA
-    _ => abort("Invalid channel count")
+    _ => return Err(InvalidChannel)
   }
   let colorspace = match colorspace_byte {
     0 => SRGBLinearAlpha
     1 => AllLinear
-    _ => abort("Invalid colorspace")
+    _ => return Err(InvalidColorspace)
   }
   let pixels_count = width * height
+  if pixels_count > 400000000 { // Reasonable limit to prevent memory issues
+    return Err(TooManyPixels)
+  }
   let pixels : Array[Pixel] = []
   let index : FixedArray[Pixel] = FixedArray::make(64, Pixel::default())
   let mut pos = 14
@@ -111,7 +114,7 @@ pub fn decode(data : Bytes) -> Image {
   let mut run = 0
   while pixels.length() < pixels_count {
     if pos >= data.length() {
-      abort("Unexpected end of file")
+      return Err(UnexpectedEOF)
     }
     if run > 0 {
       pixels.push(pixel)
@@ -122,14 +125,14 @@ pub fn decode(data : Bytes) -> Image {
       if b1 == QOI_OP_RGB {
         // RGB
         if pos + 2 >= data.length() {
-          abort("Unexpected end of file in RGB")
+          return Err(UnexpectedEOF)
         }
         pixel = Pixel::new(data[pos], data[pos + 1], data[pos + 2], pixel.a)
         pos = pos + 3
       } else if b1 == QOI_OP_RGBA {
         // RGBA
         if pos + 3 >= data.length() {
-          abort("Unexpected end of file in RGBA")
+          return Err(UnexpectedEOF)
         }
         pixel = Pixel::new(
           data[pos],
@@ -154,7 +157,7 @@ pub fn decode(data : Bytes) -> Image {
       } else if (b1 & QOI_MASK_2) == QOI_OP_LUMA {
         // LUMA
         if pos >= data.length() {
-          abort("Unexpected end of file in LUMA")
+          return Err(UnexpectedEOF)
         }
         let b2 = data[pos].to_int()
         pos = pos + 1
@@ -169,20 +172,30 @@ pub fn decode(data : Bytes) -> Image {
         // RUN
         run = b1 & 0x3f
       } else {
-        abort("Unknown opcode")
+        return Err(InvalidData("Unknown opcode: " + b1.to_string()))
       }
       index[qoi_color_hash(pixel)] = pixel
       pixels.push(pixel)
     }
   }
   if pixels.length() != pixels_count {
-    abort("Pixel count mismatch")
+    if pixels.length() < pixels_count {
+      return Err(InsufficientPixels)
+    } else {
+      return Err(TooManyPixels)
+    }
   }
-  Image::new(width, height, channels, colorspace, pixels)
+  Ok(Image::new(width, height, channels, colorspace, pixels))
 }
 
 ///| QOI encoder
-pub fn encode(image : Image) -> Bytes {
+pub fn encode(image : Image) -> Result[Bytes, QOIError] {
+  if image.width <= 0 || image.height <= 0 {
+    return Err(InvalidHeader)
+  }
+  if image.pixels.length() != image.width * image.height {
+    return Err(InvalidData("Pixel count doesn't match image dimensions"))
+  }
   let buffer : Array[Byte] = []
 
   // Write header
@@ -291,5 +304,5 @@ pub fn encode(image : Image) -> Bytes {
   }
 
   // Convert to bytes
-  Bytes::from_array(buffer)
+  Ok(Bytes::from_array(buffer))
 }
