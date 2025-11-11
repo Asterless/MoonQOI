@@ -24,32 +24,38 @@ QOI (Quite OK Image Format) is a modern, lossless image compression format desig
 
 ## Usage
 
-### Basic Usage
+### Import
 
 ```moonbit
 // Import the library
-import @lib from "Asterless/MoonQOI/lib"
 
+```bash
+moon add Asterless/MoonQOI
+```
+
+### Basic Usage
+
+```moonbit
 // Create an image
 let pixels = [
-  @lib.Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
-  @lib.Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
-  @lib.Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
-  @lib.Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')  // White
+  Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+  Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
+  Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+  Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')  // White
 ]
 
-let image = @lib.Image::new(
+let image = Image::new(
   2, 2,                                    // 2x2 image
-  @lib.Channels::RGBA,                     // 4 channels (RGBA)
-  @lib.Colorspace::SRGBLinearAlpha,       // sRGB colorspace
+  Channels::RGBA,                     // 4 channels (RGBA)
+  Colorspace::SRGBLinearAlpha,       // sRGB colorspace
   pixels
 )
 
 // Encode to QOI format
-let encoded_bytes = @lib.encode(image)
+let encoded_bytes = encode(image)
 
 // Decode QOI data back to image
-let decoded_image = @lib.decode(encoded_bytes)
+let decoded_image = decode(encoded_bytes)
 ```
 
 ### API Reference
@@ -124,4 +130,3 @@ Contributions are welcome! Please ensure:
 - Tests pass and new functionality is tested
 - Performance is maintained or improved
 - QOI specification compliance is preserved
-- 
