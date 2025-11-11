@@ -1,7 +1,22 @@
-package "Asterless/MoonQOI/lib"
+// Generated using `moon info`, DON'T EDIT IT
+package "Asterless/MoonQOI"
 
 // Values
 const QOI_MAGIC : Bytes = qoif
+
+const QOI_MASK_2 : Int = 0b11000000
+
+const QOI_OP_DIFF : Int = 0b01000000
+
+const QOI_OP_INDEX : Int = 0b00000000
+
+const QOI_OP_LUMA : Int = 0b10000000
+
+const QOI_OP_RGB : Int = 0xfe
+
+const QOI_OP_RGBA : Int = 0xff
+
+const QOI_OP_RUN : Int = 0b11000000
 
 const QOI_PADDING : Bytes = \x00\x00\x00\x00\x00\x00\x00\x01
 
@@ -16,6 +31,8 @@ fn qoi_color_hash(Pixel) -> Int
 fn read_be32(Bytes, Int) -> Int
 
 fn write_be32(FixedArray[Byte], Int, Int) -> Unit
+
+// Errors
 
 // Types and methods
 pub enum Channels {
@@ -52,18 +69,6 @@ fn Pixel::new(Byte, Byte, Byte, Byte) -> Self
 impl Default for Pixel
 impl Eq for Pixel
 impl Show for Pixel
-
-pub enum QOIError {
-  InvalidMagic
-  InvalidHeader
-  InvalidData(String)
-  UnexpectedEOF
-  TooManyPixels
-  InsufficientPixels
-  InvalidChannel
-  InvalidColorspace
-}
-impl Show for QOIError
 
 // Type aliases
 

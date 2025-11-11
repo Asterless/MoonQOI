@@ -5,6 +5,7 @@ A high-performance, fully compliant implementation of the QOI (Quite OK Image) f
 ## What is QOI?
 
 QOI (Quite OK Image Format) is a modern, lossless image compression format designed for simplicity and speed. It provides:
+
 - **Fast encoding/decoding** - 20-50x faster than PNG
 - **Good compression** - Similar compression ratios to PNG
 - **Simple specification** - Easy to implement and understand
@@ -73,6 +74,7 @@ let decoded_image = @lib.decode(encoded_bytes)
 ## Examples
 
 See `src/examples.mbt` for more detailed examples including:
+
 - Creating solid color images
 - Generating gradients
 - Round-trip encoding/decoding verification
@@ -80,6 +82,7 @@ See `src/examples.mbt` for more detailed examples including:
 ## QOI Format Specification
 
 This implementation follows the official QOI specification:
+
 - Magic bytes: `qoif` (0x716f6966)
 - Header: width (4 bytes), height (4 bytes), channels (1 byte), colorspace (1 byte)
 - Data chunks with various opcodes
@@ -88,6 +91,7 @@ This implementation follows the official QOI specification:
 ## Performance
 
 The implementation is optimized for speed while maintaining readability:
+
 - Efficient pixel hashing for index operations
 - Minimal memory allocations
 - Fast bit operations for opcode handling
@@ -96,11 +100,13 @@ The implementation is optimized for speed while maintaining readability:
 ## Testing
 
 Run tests with:
+
 ```bash
 moon test
 ```
 
 The test suite includes:
+
 - Basic encoding/decoding verification
 - Round-trip integrity tests
 - Format compliance validation
@@ -113,7 +119,9 @@ Licensed under the Apache License 2.0. See `LICENSE` file for details.
 ## Contributing
 
 Contributions are welcome! Please ensure:
+
 - Code follows MoonBit style guidelines
 - Tests pass and new functionality is tested
 - Performance is maintained or improved
 - QOI specification compliance is preserved
+- 
