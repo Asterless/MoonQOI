@@ -1,4 +1,4 @@
-# MoonQOI - QOI Image Format Library for MoonBit
+# MoonQOI - QOI Image Format Library for MoonBit | [中文](README_zh.md)
 
 A high-performance, fully compliant implementation of the QOI (Quite OK Image) format for the MoonBit programming language.
 
@@ -25,9 +25,6 @@ QOI (Quite OK Image Format) is a modern, lossless image compression format desig
 ## Usage
 
 ### Import
-
-```moonbit
-// Import the library
 
 ```bash
 moon add Asterless/MoonQOI
