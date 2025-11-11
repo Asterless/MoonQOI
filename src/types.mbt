@@ -1,19 +1,22 @@
 // QOI (Quite OK Image Format) Implementation
 // Based on specification: https://qoiformat.org/qoi-specification.pdf
 
-///| QOI image color channels
+///|
+/// QOI image color channels
 pub enum Channels {
   RGB // 3 channels
   RGBA // 4 channels
 } derive(Show, Eq)
 
-///| QOI image colorspace
+///|
+/// QOI image colorspace
 pub enum Colorspace {
   SRGBLinearAlpha // 0 = sRGB with linear alpha
   AllLinear // 1 = all channels linear
 } derive(Show, Eq)
 
-///| RGBA pixel
+///|
+/// RGBA pixel
 pub struct Pixel {
   r : Byte
   g : Byte
@@ -21,12 +24,14 @@ pub struct Pixel {
   a : Byte
 } derive(Show, Eq, Default)
 
-///| Create a new pixel
+///|
+/// Create a new pixel
 pub fn Pixel::new(r : Byte, g : Byte, b : Byte, a : Byte) -> Pixel {
   { r, g, b, a }
 }
 
-///| QOI image structure
+///|
+/// QOI image structure
 pub struct Image {
   width : Int
   height : Int
@@ -35,25 +40,14 @@ pub struct Image {
   pixels : Array[Pixel]
 } derive(Show)
 
-///| Create a new image
+///|
+/// Create a new image
 pub fn Image::new(
   width : Int,
   height : Int,
   channels : Channels,
   colorspace : Colorspace,
-  pixels : Array[Pixel]
+  pixels : Array[Pixel],
 ) -> Image {
   { width, height, channels, colorspace, pixels }
 }
-
-///| QOI decoder/encoder errors
-pub enum QOIError {
-  InvalidMagic
-  InvalidHeader
-  InvalidData(String)
-  UnexpectedEOF
-  TooManyPixels
-  InsufficientPixels
-  InvalidChannel
-  InvalidColorspace
-} derive(Show)

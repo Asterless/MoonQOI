@@ -5,6 +5,7 @@ A high-performance, fully compliant implementation of the QOI (Quite OK Image) f
 ## What is QOI?
 
 QOI (Quite OK Image Format) is a modern, lossless image compression format designed for simplicity and speed. It provides:
+
 - **Fast encoding/decoding** - 20-50x faster than PNG
 - **Good compression** - Similar compression ratios to PNG
 - **Simple specification** - Easy to implement and understand
@@ -23,32 +24,38 @@ QOI (Quite OK Image Format) is a modern, lossless image compression format desig
 
 ## Usage
 
-### Basic Usage
+### Import
 
 ```moonbit
 // Import the library
-import @lib from "Asterless/MoonQOI/lib"
 
+```bash
+moon add Asterless/MoonQOI
+```
+
+### Basic Usage
+
+```moonbit
 // Create an image
 let pixels = [
-  @lib.Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
-  @lib.Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
-  @lib.Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
-  @lib.Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')  // White
+  Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+  Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
+  Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+  Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')  // White
 ]
 
-let image = @lib.Image::new(
-  2, 2,                                    // 2x2 image
-  @lib.Channels::RGBA,                     // 4 channels (RGBA)
-  @lib.Colorspace::SRGBLinearAlpha,       // sRGB colorspace
+let image = Image::new(
+  2, 2,                              // 2x2 image
+  Channels::RGBA,                    // 4 channels (RGBA)
+  Colorspace::SRGBLinearAlpha,       // sRGB colorspace
   pixels
 )
 
 // Encode to QOI format
-let encoded_bytes = @lib.encode(image)
+let encoded_bytes = encode(image)
 
 // Decode QOI data back to image
-let decoded_image = @lib.decode(encoded_bytes)
+let decoded_image = decode(encoded_bytes)
 ```
 
 ### API Reference
@@ -73,6 +80,7 @@ let decoded_image = @lib.decode(encoded_bytes)
 ## Examples
 
 See `src/examples.mbt` for more detailed examples including:
+
 - Creating solid color images
 - Generating gradients
 - Round-trip encoding/decoding verification
@@ -80,6 +88,7 @@ See `src/examples.mbt` for more detailed examples including:
 ## QOI Format Specification
 
 This implementation follows the official QOI specification:
+
 - Magic bytes: `qoif` (0x716f6966)
 - Header: width (4 bytes), height (4 bytes), channels (1 byte), colorspace (1 byte)
 - Data chunks with various opcodes
@@ -88,6 +97,7 @@ This implementation follows the official QOI specification:
 ## Performance
 
 The implementation is optimized for speed while maintaining readability:
+
 - Efficient pixel hashing for index operations
 - Minimal memory allocations
 - Fast bit operations for opcode handling
@@ -96,11 +106,13 @@ The implementation is optimized for speed while maintaining readability:
 ## Testing
 
 Run tests with:
+
 ```bash
 moon test
 ```
 
 The test suite includes:
+
 - Basic encoding/decoding verification
 - Round-trip integrity tests
 - Format compliance validation
@@ -113,6 +125,7 @@ Licensed under the Apache License 2.0. See `LICENSE` file for details.
 ## Contributing
 
 Contributions are welcome! Please ensure:
+
 - Code follows MoonBit style guidelines
 - Tests pass and new functionality is tested
 - Performance is maintained or improved
