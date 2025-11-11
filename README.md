@@ -45,8 +45,8 @@ let pixels = [
 ]
 
 let image = Image::new(
-  2, 2,                                    // 2x2 image
-  Channels::RGBA,                     // 4 channels (RGBA)
+  2, 2,                              // 2x2 image
+  Channels::RGBA,                    // 4 channels (RGBA)
   Colorspace::SRGBLinearAlpha,       // sRGB colorspace
   pixels
 )
