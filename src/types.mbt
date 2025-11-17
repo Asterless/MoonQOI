@@ -38,7 +38,7 @@ pub struct Image {
   channels : Channels
   colorspace : Colorspace
   pixels : Array[Pixel]
-} derive(Show)
+} derive(Show, Eq)
 
 ///|
 /// Create a new image
@@ -51,3 +51,6 @@ pub fn Image::new(
 ) -> Image {
   { width, height, channels, colorspace, pixels }
 }
+
+///|
+pub suberror ImageError String

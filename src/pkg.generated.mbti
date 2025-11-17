@@ -22,7 +22,7 @@ const QOI_PADDING : Bytes = \x00\x00\x00\x00\x00\x00\x00\x01
 
 fn bytes_eq(Bytes, Int, Bytes, Int, Int) -> Bool
 
-fn decode(Bytes) -> Image
+fn decode(Bytes) -> Image raise ImageError
 
 fn encode(Image) -> Bytes
 
@@ -33,6 +33,7 @@ fn read_be32(Bytes, Int) -> Int
 fn write_be32(FixedArray[Byte], Int, Int) -> Unit
 
 // Errors
+pub suberror ImageError String
 
 // Types and methods
 pub enum Channels {
@@ -57,6 +58,7 @@ pub struct Image {
   pixels : Array[Pixel]
 }
 fn Image::new(Int, Int, Channels, Colorspace, Array[Pixel]) -> Self
+impl Eq for Image
 impl Show for Image
 
 pub struct Pixel {

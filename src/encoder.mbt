@@ -48,12 +48,12 @@ pub fn encode(image : Image) -> Bytes {
     if pixel == prev_pixel {
       run = run + 1
       if run == 62 || i == image.pixels.length() - 1 {
-        buffer.push((QOI_OP_RUN | run).to_byte())
+        buffer.push((QOI_OP_RUN | (run - 1)).to_byte())
         run = 0
       }
     } else {
       if run > 0 {
-        buffer.push((QOI_OP_RUN | run).to_byte())
+        buffer.push((QOI_OP_RUN | (run - 1)).to_byte())
         run = 0
       }
       let index_pos = qoi_color_hash(pixel)

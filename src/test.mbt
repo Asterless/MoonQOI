@@ -198,3 +198,214 @@ test "bitwise operations for QOI opcodes" {
   assert_eq(value << 4, 0x120)
   assert_eq(value >> 2, 0x04)
 }
+
+///|
+test "encode and decode roundtrip" {
+  let pixels = [
+    Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+    Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+    Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xfe'), // Blue with different alpha
+  ]
+  let original_image = Image::new(5, 1, RGBA, SRGBLinearAlpha, pixels)
+
+  // Encode and decode
+  let encoded_data = encode(original_image)
+  let decoded_image = decode(encoded_data)
+
+  // Verify integrity
+  assert_eq(original_image.width, decoded_image.width)
+  assert_eq(original_image.height, decoded_image.height)
+  assert_eq(original_image.channels, decoded_image.channels)
+  assert_eq(original_image.colorspace, decoded_image.colorspace)
+  assert_eq(pixels.length(), decoded_image.pixels.length())
+  for i = 0; i < pixels.length(); i = i + 1 {
+    assert_eq(pixels[i], decoded_image.pixels[i])
+  }
+}
+
+///|
+test "encode and decode roundtrip - additional case" {
+  let pixels = [
+    Pixel::new(b'\x00', b'\x00', b'\x00', b'\xff'), // Black
+    Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff'), // White
+  ]
+  let original_image = Image::new(2, 1, RGBA, SRGBLinearAlpha, pixels)
+
+  // Encode and decode
+  let encoded_data = encode(original_image)
+  let decoded_image = decode(encoded_data)
+
+  // Verify integrity
+  assert_eq(original_image.width, decoded_image.width)
+  assert_eq(original_image.height, decoded_image.height)
+  assert_eq(original_image.channels, decoded_image.channels)
+  assert_eq(original_image.colorspace, decoded_image.colorspace)
+  assert_eq(pixels.length(), decoded_image.pixels.length())
+  for i = 0; i < pixels.length(); i = i + 1 {
+    assert_eq(pixels[i], decoded_image.pixels[i])
+  }
+}
+
+///|
+test "decode with invalid header (too short)" {
+  let data = b"qoif" // Too short, needs to be at least 14 bytes
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Data too short to be a valid QOI image")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with invalid magic bytes" {
+  // A valid header with incorrect magic bytes
+  let data = b"bad!\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid magic bytes")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with zero dimensions" {
+  // Header with 0 width
+  let data = b"qoif\x00\x00\x00\x00\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid header: zero dimensions")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with unexpected end of file" {
+  // Header says 1 pixel, but no pixel data
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with invalid channel count" {
+  // Header with invalid channel value (e.g., 5)
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x05\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid channel count")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised for invalid channel count")
+}
+
+///|
+test "decode with invalid colorspace" {
+  // Header with invalid colorspace value (e.g., 2)
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x02"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid colorspace")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with unexpected end of file in RGB" {
+  // Header for 1 pixel, but RGB data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\xfe\x12\x34" // Missing one byte for RGB
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in RGB")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with unexpected end of file in RGBA" {
+  // Header for 1 pixel, but RGBA data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\xff\x12\x34\x56" // Missing one byte for RGBA
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in RGBA")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "decode with unexpected end of file in LUMA" {
+  // Header for 1 pixel, but LUMA data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\x8f" // Missing second byte for LUMA
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in LUMA")
+      return
+    }
+  }
+  fail("Expected ImageError to be raised")
+}
+
+///|
+test "encode run-length edge cases" {
+  // This test verifies the correct encoding of QOI_OP_RUN,
+  // especially for the maximum run length (62) and for runs
+  // that are at the end of the pixel stream. It targets the
+  // bug where `run` was used instead of `run - 1`.
+
+  // 1. Create a sequence with a run of 62 identical pixels
+  let pixels_max_run : Array[Pixel] = []
+  let red = Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff')
+  for i = 0; i < 62; i = i + 1 {
+    pixels_max_run.push(red)
+  }
+  // Add a different pixel to terminate the run
+  pixels_max_run.push(Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'))
+  let image_max_run = Image::new(
+    pixels_max_run.length(),
+    1,
+    RGBA,
+    SRGBLinearAlpha,
+    pixels_max_run,
+  )
+  // Encode and decode, then verify
+  let decoded_max_run = decode(encode(image_max_run))
+  assert_eq(image_max_run, decoded_max_run)
+
+  // 2. Create a sequence that ends with a run
+  let pixels_end_run : Array[Pixel] = [
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+  ]
+  let white = Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')
+  for i = 0; i < 5; i = i + 1 {
+    pixels_end_run.push(white) // 5 white pixels at the end
+  }
+  let image_end_run = Image::new(
+    pixels_end_run.length(),
+    1,
+    RGBA,
+    SRGBLinearAlpha,
+    pixels_end_run,
+  )
+  // Encode and decode, then verify
+  let decoded_end_run = decode(encode(image_end_run))
+  assert_eq(image_end_run, decoded_end_run)
+}
