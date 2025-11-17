@@ -257,7 +257,7 @@ test "decode with invalid header (too short)" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -270,7 +270,7 @@ test "decode with invalid magic bytes" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -283,7 +283,7 @@ test "decode with zero dimensions" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -296,7 +296,7 @@ test "decode with unexpected end of file" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -309,7 +309,7 @@ test "decode with invalid channel count" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised for invalid channel count")
 }
 
 ///|
@@ -322,7 +322,7 @@ test "decode with invalid colorspace" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -335,7 +335,7 @@ test "decode with unexpected end of file in RGB" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -348,7 +348,7 @@ test "decode with unexpected end of file in RGBA" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
@@ -361,7 +361,7 @@ test "decode with unexpected end of file in LUMA" {
       return
     }
   }
-  fail("fail")
+  fail("Expected ImageError to be raised")
 }
 
 ///|
