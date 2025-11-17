@@ -198,3 +198,168 @@ test "bitwise operations for QOI opcodes" {
   assert_eq(value << 4, 0x120)
   assert_eq(value >> 2, 0x04)
 }
+
+///|
+test "encode and decode roundtrip" {
+  let pixels = [
+    Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+    Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff'), // Red
+    Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'), // Green
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xfe'), // Blue with different alpha
+  ]
+  let original_image = Image::new(5, 1, RGBA, SRGBLinearAlpha, pixels)
+
+  // Encode and decode
+  let encoded_data = encode(original_image)
+  let decoded_image = decode(encoded_data)
+
+  // Verify integrity
+  assert_eq(original_image.width, decoded_image.width)
+  assert_eq(original_image.height, decoded_image.height)
+  assert_eq(original_image.channels, decoded_image.channels)
+  assert_eq(original_image.colorspace, decoded_image.colorspace)
+  assert_eq(pixels.length(), decoded_image.pixels.length())
+  for i = 0; i < pixels.length(); i = i + 1 {
+    assert_eq(pixels[i], decoded_image.pixels[i])
+  }
+}
+
+///|
+test "encode and decode roundtrip - additional case" {
+  let pixels = [
+    Pixel::new(b'\x00', b'\x00', b'\x00', b'\xff'), // Black
+    Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff'), // White
+  ]
+  let original_image = Image::new(2, 1, RGBA, SRGBLinearAlpha, pixels)
+
+  // Encode and decode
+  let encoded_data = encode(original_image)
+  let decoded_image = decode(encoded_data)
+
+  // Verify integrity
+  assert_eq(original_image.width, decoded_image.width)
+  assert_eq(original_image.height, decoded_image.height)
+  assert_eq(original_image.channels, decoded_image.channels)
+  assert_eq(original_image.colorspace, decoded_image.colorspace)
+  assert_eq(pixels.length(), decoded_image.pixels.length())
+  for i = 0; i < pixels.length(); i = i + 1 {
+    assert_eq(pixels[i], decoded_image.pixels[i])
+  }
+}
+
+///|
+test "decode with invalid header (too short)" {
+  let data = b"qoif" // Too short, needs to be at least 14 bytes
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Data too short to be a valid QOI image")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with invalid magic bytes" {
+  // A valid header with incorrect magic bytes
+  let data = b"bad!\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid magic bytes")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with zero dimensions" {
+  // Header with 0 width
+  let data = b"qoif\x00\x00\x00\x00\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid header: zero dimensions")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with unexpected end of file" {
+  // Header says 1 pixel, but no pixel data
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with invalid channel count" {
+  // Header with invalid channel value (e.g., 5)
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x05\x00"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid channel count")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with invalid colorspace" {
+  // Header with invalid colorspace value (e.g., 2)
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x02"
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Invalid colorspace")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with unexpected end of file in RGB" {
+  // Header for 1 pixel, but RGB data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\xfe\x12\x34" // Missing one byte for RGB
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in RGB")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with unexpected end of file in RGBA" {
+  // Header for 1 pixel, but RGBA data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\xff\x12\x34\x56" // Missing one byte for RGBA
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in RGBA")
+      return
+    }
+  }
+  fail("fail")
+}
+
+///|
+test "decode with unexpected end of file in LUMA" {
+  // Header for 1 pixel, but LUMA data is incomplete
+  let data = b"qoif\x00\x00\x00\x01\x00\x00\x00\x01\x04\x00\x8f" // Missing second byte for LUMA
+  let _ = decode(data) catch {
+    ImageError(msg) => {
+      assert_eq(msg, "Unexpected end of file in LUMA")
+      return
+    }
+  }
+  fail("fail")
+}

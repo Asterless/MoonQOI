@@ -2,14 +2,14 @@
 
 ///|
 /// QOI decoder
-pub fn decode(data : Bytes) -> Image {
+pub fn decode(data : Bytes) -> Image raise ImageError {
   if data.length() < 14 {
-    abort("Invalid header: file too short")
+    raise ImageError("Data too short to be a valid QOI image")
   }
 
   // Check magic
   if not(bytes_eq(data, 0, QOI_MAGIC, 0, 4)) {
-    abort("Invalid magic bytes")
+    raise ImageError("Invalid magic bytes")
   }
 
   // Read header
@@ -18,17 +18,17 @@ pub fn decode(data : Bytes) -> Image {
   let channels_byte = data[12].to_int()
   let colorspace_byte = data[13].to_int()
   if width == 0 || height == 0 {
-    abort("Invalid header: zero dimensions")
+    raise ImageError("Invalid header: zero dimensions")
   }
   let channels = match channels_byte {
     3 => RGB
     4 => RGBA
-    _ => abort("Invalid channel count")
+    _ => raise ImageError("Invalid channel count")
   }
   let colorspace = match colorspace_byte {
     0 => SRGBLinearAlpha
     1 => AllLinear
-    _ => abort("Invalid colorspace")
+    _ => raise ImageError("Invalid colorspace")
   }
   let pixels_count = width * height
   let pixels : Array[Pixel] = []
@@ -38,7 +38,7 @@ pub fn decode(data : Bytes) -> Image {
   let mut run = 0
   while pixels.length() < pixels_count {
     if pos >= data.length() {
-      abort("Unexpected end of file")
+      raise ImageError("Unexpected end of file")
     }
     if run > 0 {
       pixels.push(pixel)
@@ -49,14 +49,14 @@ pub fn decode(data : Bytes) -> Image {
       if b1 == QOI_OP_RGB {
         // RGB
         if pos + 2 >= data.length() {
-          abort("Unexpected end of file in RGB")
+          raise ImageError("Unexpected end of file in RGB")
         }
         pixel = Pixel::new(data[pos], data[pos + 1], data[pos + 2], pixel.a)
         pos = pos + 3
       } else if b1 == QOI_OP_RGBA {
         // RGBA
         if pos + 3 >= data.length() {
-          abort("Unexpected end of file in RGBA")
+          raise ImageError("Unexpected end of file in RGBA")
         }
         pixel = Pixel::new(
           data[pos],
@@ -81,7 +81,7 @@ pub fn decode(data : Bytes) -> Image {
       } else if (b1 & QOI_MASK_2) == QOI_OP_LUMA {
         // LUMA
         if pos >= data.length() {
-          abort("Unexpected end of file in LUMA")
+          raise ImageError("Unexpected end of file in LUMA")
         }
         let b2 = data[pos].to_int()
         pos = pos + 1
@@ -96,14 +96,14 @@ pub fn decode(data : Bytes) -> Image {
         // RUN
         run = b1 & 0x3f
       } else {
-        abort("Unknown opcode")
+        raise ImageError("Unknown opcode")
       }
       index[qoi_color_hash(pixel)] = pixel
       pixels.push(pixel)
     }
   }
   if pixels.length() != pixels_count {
-    abort("Pixel count mismatch")
+    raise ImageError("Pixel count mismatch")
   }
   Image::new(width, height, channels, colorspace, pixels)
 }

@@ -53,7 +53,7 @@ pub fn encode(image : Image) -> Bytes {
       }
     } else {
       if run > 0 {
-        buffer.push((QOI_OP_RUN | run).to_byte())
+        buffer.push((QOI_OP_RUN | (run - 1)).to_byte())
         run = 0
       }
       let index_pos = qoi_color_hash(pixel)
