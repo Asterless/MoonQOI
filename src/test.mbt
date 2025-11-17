@@ -363,3 +363,49 @@ test "decode with unexpected end of file in LUMA" {
   }
   fail("fail")
 }
+
+///|
+test "encode run-length edge cases" {
+  // This test verifies the correct encoding of QOI_OP_RUN,
+  // especially for the maximum run length (62) and for runs
+  // that are at the end of the pixel stream. It targets the
+  // bug where `run` was used instead of `run - 1`.
+
+  // 1. Create a sequence with a run of 62 identical pixels
+  let pixels_max_run : Array[Pixel] = []
+  let red = Pixel::new(b'\xff', b'\x00', b'\x00', b'\xff')
+  for i = 0; i < 62; i = i + 1 {
+    pixels_max_run.push(red)
+  }
+  // Add a different pixel to terminate the run
+  pixels_max_run.push(Pixel::new(b'\x00', b'\xff', b'\x00', b'\xff'))
+  let image_max_run = Image::new(
+    pixels_max_run.length(),
+    1,
+    RGBA,
+    SRGBLinearAlpha,
+    pixels_max_run,
+  )
+  // Encode and decode, then verify
+  let decoded_max_run = decode(encode(image_max_run))
+  assert_eq(image_max_run, decoded_max_run)
+
+  // 2. Create a sequence that ends with a run
+  let pixels_end_run : Array[Pixel] = [
+    Pixel::new(b'\x00', b'\x00', b'\xff', b'\xff'), // Blue
+  ]
+  let white = Pixel::new(b'\xff', b'\xff', b'\xff', b'\xff')
+  for i = 0; i < 5; i = i + 1 {
+    pixels_end_run.push(white) // 5 white pixels at the end
+  }
+  let image_end_run = Image::new(
+    pixels_end_run.length(),
+    1,
+    RGBA,
+    SRGBLinearAlpha,
+    pixels_end_run,
+  )
+  // Encode and decode, then verify
+  let decoded_end_run = decode(encode(image_end_run))
+  assert_eq(image_end_run, decoded_end_run)
+}
